@@ -68,7 +68,7 @@ class Accelerometer : public LSM303
 };
 
 Accelerometer lsm303;
-boolean in_contact;  // set when accelerometer detects contact with opposing robot
+boolean in_contact;  // set when accelerometer detects contact with other rubuts
 
 void setup()
 {
@@ -115,8 +115,7 @@ bool check_for_contact() // check shit
 {
   static long threshold_squared = (long) XY_ACCELERATION_THRESHOLD * (long) XY_ACCELERATION_THRESHOLD;
   return (lsm303.ss_xy_avg() >  threshold_squared) && \
-    (loop_start_time - last_turn_time > MIN_DELAY_AFTER_TURN) && \
-    (loop_start_time - contact_made_time > MIN_DELAY_BETWEEN_CONTACTS);
+  
 }
 
 // Accelerate if it sees enemies (ALLAHUAKBAR)
@@ -124,7 +123,7 @@ void on_contact_made()
 {
   in_contact = true;
   contact_made_time = loop_start_time;
-  setForwardSpeed(FullSpeed);
+  
 
 }
 }
