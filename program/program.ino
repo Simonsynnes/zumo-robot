@@ -1,12 +1,20 @@
+<<<<<<< .merge_file_a01624
+=======
+// LIBRARIES ----------------------------
+>>>>>>> .merge_file_a06592
 #include <ZumoBuzzer.h>
 #include <ZumoMotors.h>
 #include <Pushbutton.h>
 #include <QTRSensors.h>
 #include <ZumoReflectanceSensorArray.h>
+<<<<<<< .merge_file_a01624
 #include <avr/pgmspace.h>
 #include <Wire.h>
 #include <LSM303.h>
 
+=======
+//---------------------------------------
+>>>>>>> .merge_file_a06592
 
 
 // SWITCH CASES -------------------------
@@ -38,6 +46,7 @@ class RunningAverage
     static T zero;
 };
 
+<<<<<<< .merge_file_a01624
 // Accelerometer Class -- extends the LSM303 Library to support reading and averaging the x-y acceleration 
 class Accelerometer : public LSM303
 {
@@ -75,10 +84,33 @@ void setup()
  // Initiate LSM303
   lsm303.init();
   lsm303.enable();
+=======
+// MOTOR --------------------------------
+#define REVERSE_SPEED     200 // 0 is stopped, 400 is full speed
+#define TURN_SPEED        200
+#define FORWARD_SPEED     400
+#define REVERSE_DURATION  200 // ms
+#define TURN_DURATION     300 // ms
+// --------------------------------------
+
+// ZUMO ---------------------------------
+ZumoMotors motors;
+Pushbutton button(ZUMO_BUTTON);
+unsigned int sensor_values[6];
+ZumoReflectanceSensorArray sensors(QTR_NO_EMITTER_PIN);
+//---------------------------------------
+
+void setup() 
+{
+  button.waitForButton();
+  delay(3000);  
+>>>>>>> .merge_file_a06592
 }
 
 void loop()
 {
+   sensors.read(sensor_values);
+
   // Get all sensor data
   int lightSensorLeftValue = 0;
   int lightSensorRightValue = 0;
@@ -88,7 +120,29 @@ void loop()
  
 
   // Perform action based on sensor data
+<<<<<<< .merge_file_a01624
 
+=======
+  switch (action)
+  {
+    case case_normal:
+    normal();
+    break;
+    
+    case case_chase:
+    chase();
+    break;
+    
+    case case_boundary_detected:
+    boundaryDetected();
+    break;
+  }
+}
+
+int validateSensorData(int lightLeft, int lightRight, int distance)
+{
+  
+>>>>>>> .merge_file_a06592
 }
 
 void chase()
@@ -108,6 +162,7 @@ void boundaryDetected()
 
 }
 
+<<<<<<< .merge_file_a01624
 
 // chse functions:
 
@@ -127,3 +182,32 @@ void on_contact_made()
 
 }
 }
+=======
+void motorReverseTurnLeft()
+{
+    motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
+    delay(REVERSE_DURATION);
+    motors.setSpeeds(-TURN_SPEED, TURN_SPEED);
+    delay(TURN_DURATION);
+    motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
+}
+
+void motorReverseTurnRight()
+{
+	motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
+    delay(REVERSE_DURATION);
+    motors.setSpeeds(TURN_SPEED, -TURN_SPEED);
+    delay(TURN_DURATION);
+    motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
+}
+
+void motorForward()
+{
+	motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
+}
+
+void motorStop()
+{
+	motors.setSpeeds(0, 0);
+}
+>>>>>>> .merge_file_a06592
