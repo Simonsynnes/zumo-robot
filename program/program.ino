@@ -101,9 +101,24 @@ void motorReverseTurnRight()
     motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
 }
 
+void motorTurnLeft()
+{
+  motors.setSpeeds(-TURN_SPEED, TURN_SPEED);
+}
+
+void motorTurnRight()
+{
+  motors.setSpeeds(TURN_SPEED, -TURN_SPEED);
+}
+
 void motorForward()
 {
 	motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
+}
+
+void motorReverse()
+{
+  motors.setSpeeds(REVERSE_SPEED, REVERSE_SPEED);
 }
 
 void motorStop()
