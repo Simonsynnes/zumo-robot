@@ -17,10 +17,10 @@ const int case_boundary_detected = 2; // Robot is standing on track limit
 
 // MOTOR --------------------------------
 #define REVERSE_SPEED     200 // 0 is stopped, 400 is full speed
-#define TURN_SPEED        200
+#define TURN_SPEED        400
 #define FORWARD_SPEED     400
 #define REVERSE_DURATION  200 // ms
-#define TURN_DURATION     300 // ms
+#define TURN_DURATION     50 // ms
 // --------------------------------------
 
 // ZUMO ---------------------------------
@@ -31,15 +31,19 @@ Pushbutton button(ZUMO_BUTTON);
 unsigned int sensor_values[6];
 ZumoReflectanceSensorArray sensors(QTR_NO_EMITTER_PIN);
 //---------------------------------------
+int value = 0;
 
 void setup() 
 {
+  Serial.begin(9600);
   button.waitForButton();
   delay(3000);  
 }
 
 void loop() 
 {
+  value = analogRead(2);
+  Serial.println(value);
    sensors.read(sensor_values);
 
   // Get all sensor data
@@ -89,6 +93,7 @@ void chase()
 
 void normal()
 {
+ motorTurnLeft();
   
 }
 
@@ -106,6 +111,10 @@ void boundaryDetected(int lightLeft, int lightRight)
 
 bool isOpponentInSight()
 {
+  if (value > 40) {
+    return true;
+  }
+  
    return false;
 }
 
