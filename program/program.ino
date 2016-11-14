@@ -31,7 +31,11 @@ Pushbutton button(ZUMO_BUTTON);
 unsigned int sensor_values[6];
 ZumoReflectanceSensorArray sensors(QTR_NO_EMITTER_PIN);
 //---------------------------------------
-int value = 0;
+
+// DISTANCE -----------------------------
+int DISTANCE_SENSOR_FRONT_PIN = 2;
+int SIGHT_THRESHOLD_1 = 30;
+//---------------------------------------
 
 void setup() 
 {
@@ -42,14 +46,15 @@ void setup()
 
 void loop() 
 {
-  value = analogRead(2);
-  Serial.println(value);
-   sensors.read(sensor_values);
+  int distanceSensorFrontValue = analogRead(DISTANCE_SENSOR_FRONT_PIN);
+  Serial.println(distanceSensorFrontValue);
+  
+  sensors.read(sensor_values);
 
   // Get all sensor data
   int lightSensorLeftValue = sensor_values[0];
   int lightSensorRightValue = sensor_values[5];
-  bool opponentSensorValue = isOpponentInSight();
+  bool opponentSensorValue = isOpponentInSight(distanceSensorFrontValue);
   
   // Create action based on sensor data
   int action = validateSensorData(lightSensorLeftValue, lightSensorRightValue, opponentSensorValue);
@@ -93,8 +98,7 @@ void chase()
 
 void normal()
 {
- motorTurnLeft();
-  
+	motorTurnLeft();
 }
 
 void boundaryDetected(int lightLeft, int lightRight)
@@ -109,9 +113,10 @@ void boundaryDetected(int lightLeft, int lightRight)
   }
 }
 
-bool isOpponentInSight()
+bool isOpponentInSight(int frontSensor)
 {
-  if (value > 40) {
+  if (frontSensor > SIGHT_THRESHOLD_1)
+  {
     return true;
   }
   
