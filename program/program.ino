@@ -11,8 +11,9 @@
 
 // SWITCH CASES -------------------------
 const int case_normal = 0; // Look for opponent
-const int case_chase = 1; // Opponent found
-const int case_boundary_detected = 2; // Robot is standing on track limit
+const int case_turn = 1;
+const int case_chase = 2; // Opponent found
+const int case_boundary_detected = 3; // Robot is standing on track limit
 // --------------------------------------
 
 // MOTOR --------------------------------
@@ -35,18 +36,23 @@ ZumoReflectanceSensorArray sensors(QTR_NO_EMITTER_PIN);
 // DISTANCE -----------------------------
 int DISTANCE_SENSOR_FRONT_PIN = 2;
 int SIGHT_THRESHOLD_1 = 30;
+
+int DISTANCE_SENSOR_BACK_PIN = 3;
+int SIGHT_THRESHOLD_2 = 30;
 //---------------------------------------
 
 void setup() 
 {
   Serial.begin(9600);
   button.waitForButton();
-  delay(3000);  
+  delay(5000);  
 }
 
 void loop() 
 {
   int distanceSensorFrontValue = analogRead(DISTANCE_SENSOR_FRONT_PIN);
+  int distanceSensorBackValue = analogRead(DISTANCE_SENSOR_BACK_PIN);
+  
   Serial.println(distanceSensorFrontValue);
   
   sensors.read(sensor_values);
@@ -54,7 +60,7 @@ void loop()
   // Get all sensor data
   int lightSensorLeftValue = sensor_values[0];
   int lightSensorRightValue = sensor_values[5];
-  bool opponentSensorValue = isOpponentInSight(distanceSensorFrontValue);
+  int opponentSensorValue = isOpponentInSight(distanceSensorFrontValue, distanceSensorBackValue);
   
   // Create action based on sensor data
   int action = validateSensorData(lightSensorLeftValue, lightSensorRightValue, opponentSensorValue);
@@ -65,6 +71,10 @@ void loop()
     case case_normal:
 		normal();
 		break;
+
+    case case_turn:
+    turn();
+    break;
     
     case case_chase:
 		chase();
@@ -76,16 +86,21 @@ void loop()
   }
 }
 
-int validateSensorData(int lightLeft, int lightRight, bool opponent)
+int validateSensorData(int lightLeft, int lightRight, int opponent)
 {
   if (lightLeft > QTR_THRESHOLD || lightRight > QTR_THRESHOLD)
   {
     return case_boundary_detected;
   }
   
-  if (opponent)
+  if (opponent == case_chase)
   {
     return case_chase;
+  }
+
+  if (opponent == case_turn)
+  {
+    return case_turn;
   }
   
   return case_normal;
@@ -94,6 +109,11 @@ int validateSensorData(int lightLeft, int lightRight, bool opponent)
 void chase()
 {
 	motorForward();
+}
+
+void turn()
+{
+   motorTurnRobotAround();
 }
 
 void normal()
@@ -113,14 +133,19 @@ void boundaryDetected(int lightLeft, int lightRight)
   }
 }
 
-bool isOpponentInSight(int frontSensor)
+int isOpponentInSight(int frontSensor, int backSensor)
 {
   if (frontSensor > SIGHT_THRESHOLD_1)
   {
-    return true;
+    return case_chase;
+  }
+
+  if (backSensor > SIGHT_THRESHOLD_2)
+  {
+    return case_turn;
   }
   
-   return false;
+   return 0;
 }
 
 void motorReverseTurnLeft()
@@ -134,11 +159,18 @@ void motorReverseTurnLeft()
 
 void motorReverseTurnRight()
 {
-	motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
+	  motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
     delay(REVERSE_DURATION);
     motors.setSpeeds(TURN_SPEED, -TURN_SPEED);
     delay(TURN_DURATION);
     motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
+}
+
+void motorTurnRobotAround()
+{
+  motors.setSpeeds(-400, 400);
+  delay(320);
+  motorStop();
 }
 
 void motorTurnLeft()
