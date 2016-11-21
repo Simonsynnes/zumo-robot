@@ -18,15 +18,15 @@ const int case_boundary_detected = 3; // Robot is standing on track limit
 
 // MOTOR --------------------------------
 #define REVERSE_SPEED     200 // 0 is stopped, 400 is full speed
-#define TURN_SPEED        400
-#define FORWARD_SPEED     400
+#define TURN_SPEED        300
+#define FORWARD_SPEED     300
 #define REVERSE_DURATION  200 // ms
 #define TURN_DURATION     50 // ms
 // --------------------------------------
 
 // ZUMO ---------------------------------
 #define NUM_SENSORS 6
-#define QTR_THRESHOLD  1000
+#define QTR_THRESHOLD  1600
 ZumoMotors motors;
 Pushbutton button(ZUMO_BUTTON);
 unsigned int sensor_values[6];
@@ -35,10 +35,10 @@ ZumoReflectanceSensorArray sensors(QTR_NO_EMITTER_PIN);
 
 // DISTANCE -----------------------------
 int DISTANCE_SENSOR_FRONT_PIN = 2;
-int SIGHT_THRESHOLD_1 = 30;
+int SIGHT_THRESHOLD_1 = 150;
 
-int DISTANCE_SENSOR_BACK_PIN = 3;
-int SIGHT_THRESHOLD_2 = 30;
+int DISTANCE_SENSOR_BACK_PIN = 0;
+int SIGHT_THRESHOLD_2 = 400;
 //---------------------------------------
 
 void setup() 
@@ -52,8 +52,7 @@ void loop()
 {
   int distanceSensorFrontValue = analogRead(DISTANCE_SENSOR_FRONT_PIN);
   int distanceSensorBackValue = analogRead(DISTANCE_SENSOR_BACK_PIN);
-  
-  Serial.println(distanceSensorFrontValue);
+ 
   
   sensors.read(sensor_values);
 
@@ -61,6 +60,11 @@ void loop()
   int lightSensorLeftValue = sensor_values[0];
   int lightSensorRightValue = sensor_values[5];
   int opponentSensorValue = isOpponentInSight(distanceSensorFrontValue, distanceSensorBackValue);
+
+    Serial.print("Left sensor: ");
+    Serial.println(lightSensorLeftValue);
+    Serial.print("Right sensor: ");
+    Serial.println(lightSensorRightValue);
   
   // Create action based on sensor data
   int action = validateSensorData(lightSensorLeftValue, lightSensorRightValue, opponentSensorValue);
@@ -168,8 +172,9 @@ void motorReverseTurnRight()
 
 void motorTurnRobotAround()
 {
+  motorStop();
   motors.setSpeeds(-400, 400);
-  delay(320);
+  delay(425);
   motorStop();
 }
 
