@@ -25,24 +25,24 @@ const int case_boundary_detected = 3; // Robot is standing on track limit
 //#define TURN_DURATION     50 // ms
 
 #define REVERSE_SPEED     200 // 0 is stopped, 400 is full speed
-#define TURN_SPEED        200
+#define TURN_SPEED        400
 #define FORWARD_SPEED     400
-#define REVERSE_DURATION  200 // ms
-#define TURN_DURATION     300 // ms
+#define REVERSE_DURATION  350 // ms
+#define TURN_DURATION     300u // ms
 // --------------------------------------
 
 // ZUMO ---------------------------------
 #define NUM_SENSORS 2
-#define QTR_THRESHOLD  1900
+#define QTR_THRESHOLD  1700
 ZumoMotors motors;
 Pushbutton button(ZUMO_BUTTON);
-unsigned int sensor_values[2];
+unsigned int sensor_values[1];
 ZumoReflectanceSensorArray sensors;
 //---------------------------------------
 
 // DISTANCE -----------------------------
-int DISTANCE_SENSOR_FRONT_PIN = 2;
-int SIGHT_THRESHOLD_1 = 75;
+int DISTANCE_SENSOR_FRONT_PIN = A3;
+int SIGHT_THRESHOLD_1 = 20;
 
 int DISTANCE_SENSOR_BACK_PIN = 0;
 int SIGHT_THRESHOLD_2 = 200;
@@ -50,7 +50,7 @@ int SIGHT_THRESHOLD_2 = 200;
 
 // SERVO --------------------------------
 Servo SERVO;
-int SERVO_PIN = 2;
+int SERVO_PIN = A1;
 // --------------------------------------
 
 void setup() 
@@ -59,32 +59,33 @@ void setup()
   byte pins[] = {4, 5};
   sensors.init(pins, 2);
   SERVO.attach(SERVO_PIN);
-  
+  SERVO.write(40);
+  delay(50);
   button.waitForButton();
   delay(5000); 
-
-  SERVO.write(180);
-  delay(1000);
-  SERVO.write(0);
-  delay(1000);
+  SERVO.write(120);
+  delay(250);
+  SERVO.detach();
+  digitalWrite(SERVO_PIN, LOW);
 }
 
 void loop() 
 {
-  int distanceSensorFrontValue = analogRead(DISTANCE_SENSOR_FRONT_PIN);
+ if (SERVO.attached())
+ {
+  SERVO.detach();
+ }
+  
+  
   int distanceSensorBackValue = analogRead(DISTANCE_SENSOR_BACK_PIN);
- 
+
   sensors.read(sensor_values);
 
   // Get all sensor data
   int lightSensorLeftValue = sensor_values[0];
   int lightSensorRightValue = sensor_values[1];
-  int opponentSensorValue = isOpponentInSight(distanceSensorFrontValue, distanceSensorBackValue);
+  int opponentSensorValue = isOpponentInSight(distanceSensorBackValue);
 
-    Serial.print("Front sensor: ");
-    Serial.println(distanceSensorFrontValue);
-    Serial.print("Back sensor: ");
-    Serial.println(distanceSensorBackValue);
   
   // Create action based on sensor data
   int action = validateSensorData(lightSensorLeftValue, lightSensorRightValue, opponentSensorValue);
@@ -103,11 +104,12 @@ void loop()
     case case_chase:
 		chase();
 		break;
-    
+
     case case_boundary_detected:
 		boundaryDetected(lightSensorLeftValue, lightSensorRightValue);
 		break;
   }
+  
 }
 
 int validateSensorData(int lightLeft, int lightRight, int opponent)
@@ -133,16 +135,20 @@ int validateSensorData(int lightLeft, int lightRight, int opponent)
 void chase()
 {
 	motorForward();
+Serial.println("CHASE");
 }
 
 void turn()
 {
    motorTurnRobotAround();
+  Serial.println("TURN");
 }
 
 void normal()
 {
-  motors.setSpeeds(-40, 40);
+  
+ motors.setSpeeds(400,400);
+Serial.println("NORMAL");
 }
 
 void boundaryDetected(int lightLeft, int lightRight)
@@ -157,19 +163,16 @@ void boundaryDetected(int lightLeft, int lightRight)
   }
 }
 
-int isOpponentInSight(int frontSensor, int backSensor)
+int isOpponentInSight(int backSensor)
 {
-  if (frontSensor > SIGHT_THRESHOLD_1)
-  {
-    return case_chase;
-  }
-
   if (backSensor > SIGHT_THRESHOLD_2)
   {
     return case_turn;
   }
   
    return 0;
+
+   
 }
 
 void motorReverseTurnLeft()
